@@ -1,9 +1,10 @@
 <?php
 session_start();
+
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "student_registration";
+$dbname = "stdent_registration";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -12,8 +13,9 @@ if ($conn->connect_error) {
 }
 
 // Retrieve user input
-$email = $_POST['email'];
-$password = $_POST['password'];
+$data = json_decode(file_get_contents('php://input'), true);
+$email = $data['email'] ?? null;
+$password = $data['password'] ?? null;
 
 // Verify credentials
 $sql = "SELECT id, role, password FROM users WHERE email = ?";
@@ -26,12 +28,12 @@ if ($row = $result->fetch_assoc()) {
     if (password_verify($password, $row['password'])) {
         $_SESSION['user_id'] = $row['id'];
         $_SESSION['role'] = $row['role'];
-        echo "Login successful!";
+        echo json_encode(["message" => "Login successful!", "role" => $row['role']]);
     } else {
-        echo "Invalid password!";
+        echo json_encode(["message" => "Invalid password!"]);
     }
 } else {
-    echo "User not found!";
+    echo json_encode(["message" => "User not found!"]);
 }
 
 $stmt->close();

@@ -1,5 +1,4 @@
 <?php
-// Database connection
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -11,29 +10,47 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Collect user data
+// Handle JSON input for registration
 $data = json_decode(file_get_contents('php://input'), true);
 
-$firstName = $data['firstName'] ?? null;
-$lastName = $data['lastName'] ?? null;
-$email = $data['email'] ?? null;
-$phone = $data['phone'] ?? null;
-$password = password_hash($data['password'], PASSWORD_BCRYPT);
-$role = $data['role'] ?? 'student';
+if ($data) {
+    // Retrieve form data safely
+    $id = uniqid();
+    $firstName = $data['firstName'] ?? null;
+    $lastName = $data['lastName'] ?? null;
+    $email = $data['email'] ?? null;
+    $phone = $data['phone'] ?? null;
+    $password = password_hash($data['password'], PASSWORD_BCRYPT);
+    $maritalStatus = $data['maritalStatus'] ?? null;
+    $dob = $data['dob'] ?? null;
+    $state = $data['state'] ?? null;
+    $localGovt = $data['localGovt'] ?? null;
+    $address = $data['address'] ?? null;
+    $nationality = $data['nationality'] ?? null;
+    $nin = $data['nin'] ?? null;
+    $department = $data['department'] ?? null;
+    $gender = $data['gender'] ?? null;
+    $privacyPolicy = $data['privacyPolicy'] ?? true;
+    $role = $data['role'] ?? 'student';
 
+    // Insert user into the database
+    $insertSQL = "INSERT INTO users (id, firstName, lastName, email, phone, password, maritalStatus, dob, state, localGovt, address, nationality, nin, department, gender, privacyPolicy, role) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-// Insert into database
-$sql = "INSERT INTO users (id, firstName, lastName, email, phone, password, role) VALUES (UUID(), ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($insertSQL);
+    $stmt->bind_param("sssssssssssssssis", $id, $firstName, $lastName, $email, $phone, $password, $maritalStatus, $dob, $state, $localGovt, $address, $nationality, $nin, $department, $gender, $privacyPolicy, $role);
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ssssss", $firstName, $lastName, $email, $phone, $password, $role);
+    if ($stmt->execute()) {
+        echo "User registered successfully!";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
 
-if ($stmt->execute()) {
-    echo "Registration successful!";
+    $stmt->close();
 } else {
-    echo "Error: " . $stmt->error;
+    echo "Invalid data received.";
 }
 
-$stmt->close();
 $conn->close();
 ?>
+

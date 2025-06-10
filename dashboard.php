@@ -2,14 +2,12 @@
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    die("Access denied. Please login.");
+    die(json_encode(["message" => "Access denied. Please log in."]));
 }
 
 if ($_SESSION['role'] === 'admin') {
-    echo "<h1>Welcome, Admin!</h1>";
-    echo "<p>You have full access.</p>";
+    echo json_encode(["message" => "Welcome, Admin! You have full access."]);
 } else {
-    echo "<h1>Welcome, Student!</h1>";
-    echo "<p>You have limited access.</p>";
+    echo json_encode(["message" => "Welcome, Student! You have limited access."]);
 }
 ?>
